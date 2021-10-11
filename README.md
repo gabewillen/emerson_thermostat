@@ -50,7 +50,7 @@ The menu unfortunately blocks the execution of the statemachine and would be muc
 
 ---
 ```c
-#include "include/thermostat.h"
+#include "include/statemachine.h"
 
 
 enum {
