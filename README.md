@@ -3,6 +3,9 @@
 ---
 I will use this readme to document my thoughts as I design and develop this statemachine.
 
+| WARNING: I have not written unit tests. Use this at your own risk |
+| --- |
+
 ## Assignment
 
 ---
@@ -42,6 +45,84 @@ It's similar to the original concept written by David Harel.
 
 For user interaction I created a crude ncurses like menu. It repaints to the console after input is entered or in the event a transaction is executed.
 The menu unfortunately blocks the execution of the statemachine and would be much better in a thread or task.
+
+## API Example
+
+---
+```c
+
+enum {
+STATE_A = 1,
+STATE_B,
+STATE_C,
+STATE_D,
+STATE_E
+};
+
+enum {
+EVENT_A = 1,
+EVENT_B,
+EVENT_C,
+EVENT_D
+};
+
+void log_entry(statemachine_t *statemachine, state_t *state, trigger_t *trigger) {}
+void log_exit(statemachine_t *statemachine, state_t *state,  trigger_t *trigger) {}
+void log_effect(statemachine_t *statemachine, transition_t *transition) {}
+
+state_t substates[] = {
+{
+.id = STATE_C,
+.entry = log_entry,
+.exit = log_exit
+},
+{
+.id = STATE_D,
+.entry = log_entry,
+.exit = log_exit
+},
+NULL_ELEMENT
+};
+
+state_t states[] = {
+{
+.id = STATE_A,
+.substates = substates,
+.initial.target = STATE_D,
+.entry = log_entry,
+.exit = log_exit,
+},
+{
+.id = STATE_B,
+.entry = log_entry,
+.exit = log_exit
+},
+NULL_ELEMENT
+};
+
+transition_t transitions[] = {
+{
+.source = STATE_B,
+.target = STATE_A,
+.trigger = EVENT_A,
+.effect = log_effect
+},
+NULL_ELEMENT
+};
+
+statemachine_t example = {
+.root = {
+.substates = states
+},
+.transitions = transitions
+};
+
+int main() {
+statemachine_init(&example);
+statemachine_dispatch(&example, EVENT_C, NULL);
+return 0;
+}
+```
 
 ## Usage
 
@@ -87,7 +168,7 @@ cmd: 3
 enter value: 74
 ```
 
-After a command is entered that results in a statemachine transition the transition traversal and entry and exit
+After a command is entered that results in a transition. The transition traversal along state with entry and exit
 actions will be written to the console.
 
 ```
@@ -106,7 +187,7 @@ Logs with the `->` represent transition effects
 
 Clone or download the code. Unzip the file and navigate to the directory in your console.
 ```
-cd emerson-thermostat
+cd emerson_thermostat
 mkdir build
 cd build
 cmake ../

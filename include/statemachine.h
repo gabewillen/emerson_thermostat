@@ -74,7 +74,7 @@ typedef struct state {
  * The statemachine is itself a top level state. Events are processed starting from the most nested state to the top.
  */
 typedef struct statemachine {
-    state_t base;
+    state_t root;
     transition_t *transitions;
     char processing;
 } statemachine_t;

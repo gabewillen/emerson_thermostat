@@ -143,7 +143,12 @@ execute_transition(statemachine_t *statemachine, state_t *source, state_t *targe
         return enter_state(statemachine, source, target, &transition->trigger);
     }
 }
-
+/**
+ * Check to see if a transition has a guard and if it does evaluate it.
+ * @param statemachine
+ * @param transition
+ * @return
+ */
 int evaluate_transition(statemachine_t *statemachine, transition_t *transition) {
     if (transition->guard != NULL) {
         return transition->guard(statemachine, transition);
@@ -151,9 +156,19 @@ int evaluate_transition(statemachine_t *statemachine, transition_t *transition) 
     return 1;
 }
 
+/**
+ * A completion transition has the highest priority of all transitions. It's essentially a transition without an event.
+ * @param statemachine
+ * @param current
+ * @return
+ */
 state_t *process_completion_transitions(statemachine_t *statemachine, state_t *current) {
+    // loop trough all of the transitions
     for (transition_t *transition=statemachine->transitions; transition != NULL && transition->source != NULL_ELEMENT_ID; transition++) {
+        // is this transition an outgoing transition for the current state
         if (transition->source == current->id) {
+            // make sure it doesn't have an event
+
             if (transition->trigger.event == NULL_ELEMENT_ID) {
                 state_t *target = get_state_by_id((state_t *)statemachine, transition->target);
                 if (target != NULL) {
@@ -169,6 +184,13 @@ state_t *process_completion_transitions(statemachine_t *statemachine, state_t *c
     return NULL;
 }
 
+/**
+ * Process an active trigger. If trigger is NULL process all transitions with active triggers.
+ * @param statemachine
+ * @param current
+ * @param trigger
+ * @return
+ */
 state_t *process(statemachine_t *statemachine, state_t *current, trigger_t *trigger) {
     state_t *state;
     if (current->active) {
@@ -221,7 +243,6 @@ state_t *statemachine_dispatch(statemachine_t *this, event_t event, void *data) 
     }
     return NULL;
 }
-
 
 state_t *statemachine_step(statemachine_t *statemachine) {
     return statemachine_process(statemachine, NULL);

@@ -346,7 +346,7 @@ thermostat_t thermostat = {
  */
 void thermostat_run() {
     statemachine_init((statemachine_t *) &thermostat);
-    while (thermostat.statemachine.base.active) {
+    while (thermostat.statemachine.root.active) {
         statemachine_step((statemachine_t *) &thermostat);
         state_t *active = statemachine_get_active_state((state_t *) &thermostat);
         thermostat_menu(&thermostat, state_id_map[active == NULL ? 0 : active->id]);
