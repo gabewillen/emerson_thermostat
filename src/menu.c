@@ -12,12 +12,12 @@ void menu_put_divider() {
 }
 
 
-void menu_put_aligned(short left_margin, const char *string, short right_margin) {
+void menu_put_aligned(size_t left_margin, const char *string, size_t right_margin) {
     size_t len = strlen(string);
     putchar('|');
-    for (int i=0; i < left_margin; i++) putchar(' ');
-    for (int i=0; i < len; i++) putchar(string[i]);
-    for (int i=0; i < right_margin; i++) putchar(' ');
+    for (size_t i=0; i < left_margin; i++) putchar(' ');
+    for (size_t i=0; i < len; i++) putchar(string[i]);
+    for (size_t i=0; i < right_margin; i++) putchar(' ');
     putchar('|');
     putchar('\n');
 }

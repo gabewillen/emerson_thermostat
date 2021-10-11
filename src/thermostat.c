@@ -62,6 +62,8 @@ void thermostat_menu(thermostat_t *thermostat, const char *mode) {
  * @param trigger
  */
 void thermostat_log_entry(statemachine_t *statemachine, state_t *state, trigger_t *trigger) {
+    (void)(statemachine);
+    (void)(trigger);
     printf("[THERMOSTAT] %s ENTRY\n", state_id_map[state->id]);
 }
 /**
@@ -71,6 +73,8 @@ void thermostat_log_entry(statemachine_t *statemachine, state_t *state, trigger_
  * @param trigger
  */
 void thermostat_log_exit(statemachine_t *statemachine, state_t *state, trigger_t *trigger) {
+    (void)(statemachine);
+    (void)(trigger);
     printf("[THERMOSTAT] %s EXIT\n", state_id_map[state->id]);
 }
 /**
@@ -79,6 +83,7 @@ void thermostat_log_exit(statemachine_t *statemachine, state_t *state, trigger_t
  * @param transition
  */
 void thermostat_log_effect(statemachine_t *statemachine, transition_t *transition) {
+    (void)(statemachine);
     printf("[THERMOSTAT] %s -> %s\n", state_id_map[transition->source], state_id_map[transition->target]);
 }
 
@@ -113,16 +118,18 @@ void thermostat_mode_on_entry(statemachine_t *statemachine, state_t *state, trig
 }
 
 int thermostat_mode_on_constraint(statemachine_t *statemachine, transition_t *transition) {
+    (void)(transition);
     thermostat_t *thermostat = (thermostat_t *) statemachine;
     if (thermostat->mode.current->invert) {
         return thermostat->current_temperature > thermostat->mode.current->setpoint;
     }
     return  thermostat->current_temperature < thermostat->mode.current->setpoint;
 
-};
+}
 
 
 int thermostat_mode_active_constraint(statemachine_t *statemachine, transition_t *transition) {
+    (void)(transition); // avoiding compiler warnings
     thermostat_t *thermostat = (thermostat_t *) statemachine;
     time_t now = time(NULL);
     return (now - thermostat->mode.current->active_timestamp) > thermostat->mode.current->minimum_active_time;
@@ -139,9 +146,9 @@ int thermostat_mode_off_constraint(statemachine_t *statemachine, transition_t *t
         return  thermostat->current_temperature >= thermostat->mode.current->setpoint;
     }
      return 0;
-};
+}
 
-void thermostat_set_float(statemachine_t *thermostat, float *value) {
+void thermostat_set_float(float *value) {
     printf("enter value: ");
     scanf("%f", value);
     // clear the console of spaces and up until newline
@@ -154,7 +161,9 @@ void thermostat_set_float(statemachine_t *thermostat, float *value) {
  * @param transition
  */
 void thermostat_set_temperature(statemachine_t *statemachine, transition_t *transition) {
-    thermostat_set_float(statemachine, &((thermostat_t *) statemachine)->current_temperature);
+    (void)(transition); // avoid compiler warnings
+    (void)(statemachine); // avoid compiler warnings
+    thermostat_set_float(&((thermostat_t *) statemachine)->current_temperature);
 }
 /**
  * set the point at which the thermostat enters the cooling state
@@ -162,16 +171,19 @@ void thermostat_set_temperature(statemachine_t *statemachine, transition_t *tran
  * @param transition
  */
 void thermostat_set_cool_setpoint(statemachine_t *statemachine, transition_t *transition) {
-    thermostat_set_float(statemachine, &((thermostat_t *) statemachine)->mode.cool->setpoint);
+    (void)(transition); // avoid compiler warnings
+    thermostat_set_float(&((thermostat_t *) statemachine)->mode.cool->setpoint);
 }
 
 void thermostat_set_heat_setpoint(statemachine_t *statemachine, transition_t *transition) {
-    thermostat_set_float(statemachine, &((thermostat_t *) statemachine)->mode.heat->setpoint);
+    (void)(transition); // avoid compiler warnings
+    thermostat_set_float(&((thermostat_t *) statemachine)->mode.heat->setpoint);
 }
 
 
 void thermostat_set_minimum_active_time(statemachine_t *statemachine, transition_t *transition) {
-    thermostat_set_float(statemachine, &((thermostat_t *) statemachine)->mode.current->minimum_active_time);
+    (void)(transition); // avoid compiler warnings
+    thermostat_set_float(&((thermostat_t *) statemachine)->mode.cool->minimum_active_time);
 }
 
 /**
@@ -200,7 +212,7 @@ state_t cooling_substates[] = {
 };
 
 thermostat_mode_data_t thermostat_mode_data[3] = {
-        {},
+        {0},
         {
                 .setpoint=72
         },
@@ -242,7 +254,7 @@ transition_t thermostat_transitions[] = {
         {
                 THERMOSTAT_OFF,
                 THERMOSTAT_COOL,
-                THERMOSTAT_SET_MODE_COOL,
+                {THERMOSTAT_SET_MODE_COOL},
                 .effect = thermostat_log_effect
         },
         {
