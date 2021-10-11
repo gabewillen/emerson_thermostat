@@ -39,12 +39,12 @@ The accuracy to a real thermostat is not being evaluated.  The only thing that m
 
 Here I will write my general observations and thoughts. There are several methods to accomplish the assignment, I am in no
 way asserting my method is the most performant or correct approach. The easiest way this could have been done is a simple
-switch statement based statemachine that fit the exact requirements of the assignments. I decided to write a more generic state machine library. While 
-it might take additional time to develop. In the event I need to create another statemachine in C. I'll have this ready to go. Also I chose to use a stripped down hierarchical state machine.
+switch statement based statemachine that fit the exact requirements of the assignments. I decided to write a more generic state machine library. 
+This added additional development time but now its generic and re-usable.  Also I chose to use a stripped down hierarchical state machine implementation.
 It's similar to the original concept written by David Harel. 
 
-For user interaction I created a crude ncurses like menu. It repaints to the console after input is entered or in the event a transaction is executed.
-The menu unfortunately blocks the execution of the statemachine and would be much better in a thread or task.
+For user interaction I created a crude ncurses like menu. It repaints to the console after input is entered or when a transaction is executed.
+The menu unfortunately blocks the execution of the statemachine and would be much better in its owna thread or task.
 
 ## API Example
 
