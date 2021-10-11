@@ -168,8 +168,8 @@ cmd: 3
 enter value: 74
 ```
 
-After a command is entered that results in a transition. The transition traversal along state with entry and exit
-actions will be written to the console.
+After a command is entered that results in a transition. The transition effect along with any state entry or exit
+behaviors will be written to the console.
 
 ```
 cmd: 2
