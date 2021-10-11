@@ -50,20 +50,22 @@ The menu unfortunately blocks the execution of the statemachine and would be muc
 
 ---
 ```c
+#include "include/thermostat.h"
+
 
 enum {
-STATE_A = 1,
-STATE_B,
-STATE_C,
-STATE_D,
-STATE_E
+    STATE_A = 1,
+    STATE_B,
+    STATE_C,
+    STATE_D,
+    STATE_E
 };
 
 enum {
-EVENT_A = 1,
-EVENT_B,
-EVENT_C,
-EVENT_D
+    EVENT_A = 1,
+    EVENT_B,
+    EVENT_C,
+    EVENT_D
 };
 
 void log_entry(statemachine_t *statemachine, state_t *state, trigger_t *trigger) {}
@@ -71,56 +73,56 @@ void log_exit(statemachine_t *statemachine, state_t *state,  trigger_t *trigger)
 void log_effect(statemachine_t *statemachine, transition_t *transition) {}
 
 state_t substates[] = {
-{
-.id = STATE_C,
-.entry = log_entry,
-.exit = log_exit
-},
-{
-.id = STATE_D,
-.entry = log_entry,
-.exit = log_exit
-},
-NULL_ELEMENT
+        {
+                .id = STATE_C,
+                .entry = log_entry,
+                .exit = log_exit
+        },
+        {
+                .id = STATE_D,
+                .entry = log_entry,
+                .exit = log_exit
+        },
+        NULL_ELEMENT
 };
 
 state_t states[] = {
-{
-.id = STATE_A,
-.substates = substates,
-.initial.target = STATE_D,
-.entry = log_entry,
-.exit = log_exit,
-},
-{
-.id = STATE_B,
-.entry = log_entry,
-.exit = log_exit
-},
-NULL_ELEMENT
+        {
+                .id = STATE_A,
+                .substates = substates,
+                .initial.target = STATE_D,
+                .entry = log_entry,
+                .exit = log_exit,
+        },
+        {
+                .id = STATE_B,
+                .entry = log_entry,
+                .exit = log_exit
+        },
+        NULL_ELEMENT
 };
 
 transition_t transitions[] = {
-{
-.source = STATE_B,
-.target = STATE_A,
-.trigger = EVENT_A,
-.effect = log_effect
-},
-NULL_ELEMENT
+        {
+                .source = STATE_B,
+                .target = STATE_A,
+                .trigger = EVENT_A,
+                .effect = log_effect
+        },
+        NULL_ELEMENT
 };
 
 statemachine_t example = {
-.root = {
-.substates = states
-},
-.transitions = transitions
+        .root = {
+                .substates = states
+        },
+        .transitions = transitions
 };
 
 int main() {
-statemachine_init(&example);
-statemachine_dispatch(&example, EVENT_C, NULL);
-return 0;
+    statemachine_init(&example);
+    statemachine_dispatch(&example, EVENT_C, NULL);
+    return 0;
 }
 ```
 
@@ -169,7 +171,7 @@ enter value: 74
 ```
 
 After a command is entered that results in a transition. The transition effect along with any state entry or exit
-behaviors will be written to the console.
+behavior will be written to the console.
 
 ```
 cmd: 2
