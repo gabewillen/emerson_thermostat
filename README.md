@@ -3,7 +3,7 @@
 ---
 I will use this readme to document my thoughts as I design and develop this statemachine.
 
-| WARNING: I have not written unit tests. Use this at your own risk |
+| WARNING: I am in the process of writing unit tests. Until they are finished use this at your own risk |
 | --- |
 
 ## Assignment
