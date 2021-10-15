@@ -76,7 +76,7 @@ typedef struct state {
 typedef struct statemachine {
     state_t root;
     transition_t *transitions;
-    char processing;
+    volatile char processing;
 } statemachine_t;
 
 /**

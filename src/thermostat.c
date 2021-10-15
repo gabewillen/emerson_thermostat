@@ -5,6 +5,10 @@
 #include "thermostat.h"
 #include <string.h>
 #include "menu.h"
+#include <pthread.h>
+
+pthread_mutex_t lock;
+
 
 const char *state_id_map[] = {
         "",
@@ -22,9 +26,26 @@ const char *state_id_map[] = {
  */
 void thermostat_cmd_handler(thermostat_t *thermostat) {
     char buffer[MENU_WIDTH];
+    float value;
     menu_get_cmd(buffer);
     if (buffer[0] != '\n') {
-        statemachine_dispatch((statemachine_t *) thermostat, buffer[0], NULL);
+        pthread_mutex_lock(&lock);
+        switch(buffer[0]) {
+            case '3':
+                printf("enter value: ");
+                scanf("%f", &value);
+                // clear the console of spaces and up until newline
+                printf("you entered: %0.2f\n", value);
+                char c;
+                while((c = getchar()) != '\n' && c != '\r');
+                statemachine_dispatch(&thermostat->statemachine, buffer[0], (void *)&value);
+                break;
+
+            default:
+                printf("dispatching\n");
+                statemachine_dispatch(&thermostat->statemachine, buffer[0], NULL);
+        }
+        pthread_mutex_unlock(&lock);
     }
 }
 /**
@@ -145,25 +166,18 @@ int thermostat_mode_off_constraint(statemachine_t *statemachine, transition_t *t
         }
         return  thermostat->current_temperature >= thermostat->mode.current->setpoint;
     }
-     return 0;
+    return 0;
 }
 
-void thermostat_set_float(float *value) {
-    printf("enter value: ");
-    scanf("%f", value);
-    // clear the console of spaces and up until newline
-    char c;
-    while((c = getchar()) != '\n' && c != '\r');
-}
+
 /**
  * Set the thermostat current temperature
  * @param statemachine
  * @param transition
  */
 void thermostat_set_temperature(statemachine_t *statemachine, transition_t *transition) {
-    (void)(transition); // avoid compiler warnings
-    (void)(statemachine); // avoid compiler warnings
-    thermostat_set_float(&((thermostat_t *) statemachine)->current_temperature);
+    puts("thermostat_set_temperature");
+    ((thermostat_t *)statemachine)->current_temperature = *((float *)transition->trigger.data);
 }
 /**
  * set the point at which the thermostat enters the cooling state
@@ -172,18 +186,18 @@ void thermostat_set_temperature(statemachine_t *statemachine, transition_t *tran
  */
 void thermostat_set_cool_setpoint(statemachine_t *statemachine, transition_t *transition) {
     (void)(transition); // avoid compiler warnings
-    thermostat_set_float(&((thermostat_t *) statemachine)->mode.cool->setpoint);
+    ((thermostat_t *) statemachine)->mode.cool->setpoint = *((float *)transition->trigger.data);
 }
 
 void thermostat_set_heat_setpoint(statemachine_t *statemachine, transition_t *transition) {
     (void)(transition); // avoid compiler warnings
-    thermostat_set_float(&((thermostat_t *) statemachine)->mode.heat->setpoint);
+    ((thermostat_t *) statemachine)->mode.heat->setpoint = *((float *)transition->trigger.data);
 }
 
 
 void thermostat_set_minimum_active_time(statemachine_t *statemachine, transition_t *transition) {
     (void)(transition); // avoid compiler warnings
-    thermostat_set_float(&((thermostat_t *) statemachine)->mode.cool->minimum_active_time);
+//     thermostat_set_float(&((thermostat_t *) statemachine)->mode.cool->minimum_active_time);
 }
 
 /**
@@ -353,13 +367,24 @@ thermostat_t thermostat = {
         .mode.cool = &thermostat_mode_data[2],
         .current_temperature = 72
 };
+
+void *user_input_task(void *active) {
+    while (*((char *)active)) {
+        pthread_mutex_lock(&lock);
+        statemachine_step((statemachine_t *)&thermostat);
+        pthread_mutex_unlock(&lock);
+    }
+    return NULL;
+}
 /**
  * run the thermostat program
  */
 void thermostat_run() {
+    pthread_t thread;
     statemachine_init((statemachine_t *) &thermostat);
-    while (thermostat.statemachine.root.active) {
-        statemachine_step((statemachine_t *) &thermostat);
+    pthread_create(&thread, NULL, user_input_task, &((state_t*)&thermostat)->active);
+    while(thermostat.statemachine.root.active) {
+//        statemachine_step((statemachine_t *) &thermostat);
         state_t *active = statemachine_get_active_state((state_t *) &thermostat);
         thermostat_menu(&thermostat, state_id_map[active == NULL ? 0 : active->id]);
         thermostat_cmd_handler(&thermostat);

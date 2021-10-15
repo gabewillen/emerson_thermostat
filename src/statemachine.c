@@ -3,7 +3,7 @@
 //
 
 #include "statemachine.h"
-
+#include <string.h>
 
 state_t *
 execute_transition(statemachine_t *statemachine, state_t *source, state_t *target, transition_t *transition);
@@ -206,7 +206,8 @@ state_t *process(statemachine_t *statemachine, state_t *current, trigger_t *trig
         for (transition_t *transition=statemachine->transitions; transition != NULL && transition->source != NULL_ELEMENT_ID; transition++) {
             if (trigger == NULL) trigger = &transition->trigger;
             if (current->id == transition->source && transition->trigger.event == trigger->event && trigger->active) {
-                transition->trigger = *trigger;
+                printf("is trigger data null? %d", trigger->data == NULL);
+                memcpy(&transition->trigger, trigger, sizeof(trigger_t));
                 if (evaluate_transition(statemachine, transition)) {
                     state_t *target = get_state_by_id((state_t *)statemachine, transition->target);
                     state = execute_transition(statemachine, current, target, transition);
@@ -231,8 +232,8 @@ state_t *statemachine_process(statemachine_t *statemachine, trigger_t *trigger) 
 
 state_t *statemachine_dispatch(statemachine_t *this, event_t event, void *data) {
     // if the statemaching is in the middle of processing a trigger add it to the pool
-    for (transition_t *transition = this->transitions;
-         transition != NULL && transition->source != NULL_ELEMENT_ID; transition++) {
+    transition_t *transition;
+    for (transition = this->transitions; transition->source != NULL_ELEMENT_ID; transition++) {
         if (!transition->trigger.active && transition->trigger.event == event) {
             transition->trigger.data = data;
             transition->trigger.active = 1;
